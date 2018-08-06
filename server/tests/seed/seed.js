@@ -4,24 +4,6 @@ const jwt = require('jsonwebtoken');
 const {Todo} = require('./../../models/todo');
 const {User} = require('./../../models/user');
 
-const todos = [{
-    _id: new ObjectID(),
-    text: 'First test todo'
-}, {
-    _id: new ObjectID(),
-    text: 'Second test todo',
-    completed: true,
-    completedAt: 333
-}];
-
-const populateTodos = (done) => {
-    Todo.remove({})     // Clears Todos by passing in empty array
-    .then(() => {
-        return Todo.insertMany(todos);
-    })
-    .then(() => done());
-};
-
 const user1ID = new ObjectID();
 const user2ID = new ObjectID();
 const users = [{
@@ -39,7 +21,14 @@ const users = [{
 {
     _id: user2ID,
     email: 'andrew@example.com',
-    password: 'user2Pass'
+    password: 'user2Pass',
+    tokens: [{
+        access: 'auth',
+        token: jwt.sign({
+            _id: user2ID,
+            access: 'auth'
+        }, 'abc123').toString()
+    }]
 }];
 
 const populateUsers = (done) => {
@@ -53,6 +42,26 @@ const populateUsers = (done) => {
     })
     .then(() => done());
 }
+
+const todos = [{
+    _id: new ObjectID(),
+    text: 'First test todo',
+    _creator: user1ID
+}, {
+    _id: new ObjectID(),
+    text: 'Second test todo',
+    completed: true,
+    completedAt: 333,
+    _creator: user2ID
+}];
+
+const populateTodos = (done) => {
+    Todo.remove({})     // Clears Todos by passing in empty array
+    .then(() => {
+        return Todo.insertMany(todos);
+    })
+    .then(() => done());
+};
 
 module.exports = {
     todos,
