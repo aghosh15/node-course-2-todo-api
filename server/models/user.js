@@ -59,6 +59,28 @@ UserSchema.methods.generateAuthToken = function() {
     });
 };
 
+// This defines model methods and properties instead of instance methods and properties
+UserSchema.statics.findByToken = function(token) {
+    let User = this;
+    let decoded;
+
+    try {
+        decoded = jwt.verify(token, 'abc123');
+    }
+    catch (err){
+        return Promise.reject();
+        // return new Promise((resolve, reject) => {
+        //     reject();
+        // });
+    }
+
+    return User.findOne({
+        '_id': decoded._id,
+        'tokens.token': token,   // This is how we query a nested document
+        'tokens.access': 'auth'
+    });   // returns a Promise so we can chain this
+}
+
 const User = mongoose.model('User', UserSchema);
 
 module.exports = {
