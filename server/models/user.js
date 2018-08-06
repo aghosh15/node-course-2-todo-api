@@ -80,7 +80,23 @@ UserSchema.statics.findByToken = function(token) {
         'tokens.token': token,   // This is how we query a nested document
         'tokens.access': 'auth'
     });   // returns a Promise so we can chain this
-}
+};
+
+UserSchema.statics.findByCredentials = function(email, password) {
+    const User = this;
+
+    return User.findOne({email}).then((user) => {
+        if (!user) {
+            return Promise.reject();
+        }
+
+        return new Promise((resolve, reject) => {
+            bcrypt.compare(password, user.password, (err, res) => {
+                return res ? resolve(user) : reject();
+            });
+        });
+    });
+};
 
 // Mongoose middleware
 // We have to use function keyword again because of *this*
